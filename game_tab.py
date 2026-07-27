@@ -31,12 +31,6 @@ class GameTab(ttk.Frame):
         top_bar = tk.Frame(self, bg=theme.BG)
         top_bar.pack(fill="x", padx=10, pady=(10, 0))
 
-        tk.Button(
-            top_bar, text="☰ Menu", command=lambda: self.app.show_screen("menu"),
-            font=("Helvetica", 10), bg=theme.SURFACE2, fg=theme.TEXT,
-            activebackground=theme.SURFACE, borderwidth=0, padx=10, pady=4
-        ).pack(side="left")
-
         self.player_label = tk.Label(
             top_bar, text="", font=("Helvetica", 10, "bold"),
             bg=theme.BG, fg=theme.TEAL
@@ -95,6 +89,12 @@ class GameTab(ttk.Frame):
             btn_frame, text="New Sentence", command=self.new_sentence,
             font=self.stats_font, bg=theme.BLUE, fg=theme.BG,
             activebackground=theme.BLUE_HOVER, borderwidth=0, padx=15, pady=8
+        ).pack(side="left", padx=10)
+
+        tk.Button(
+            btn_frame, text="Back to Menu", command=lambda: self.app.show_screen("menu"),
+            font=self.stats_font, bg=theme.SURFACE2, fg=theme.TEXT,
+            activebackground=theme.SURFACE, borderwidth=0, padx=15, pady=8
         ).pack(side="left", padx=10)
 
         tk.Button(
