@@ -83,6 +83,7 @@ class GameTab(ttk.Frame):
         )
         self.entry.pack(pady=10, ipady=8)
         self.entry.bind("<KeyRelease>", self.on_key_release)
+        self.entry.bind("<Return>", self.on_enter)
 
         self.stats_label = tk.Label(
             self, text="WPM: 0   Accuracy: 0%   Time: 0.0s",
@@ -157,6 +158,10 @@ class GameTab(ttk.Frame):
             self.timer_label.config(text="Time's up! Click 'New Sentence' to retry.")
             return
         self.timer_job = self.after(1000, self._tick)
+
+    def on_enter(self, event):
+        if self.finished:
+            self.new_sentence()
 
     def on_key_release(self, event):
         if self.finished or self.timed_out:
