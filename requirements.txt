@@ -1,0 +1,2 @@
+# No external dependencies required.
+# This project only uses the Python standard library (tkinter, random, time).
