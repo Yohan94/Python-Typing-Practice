@@ -8,6 +8,7 @@ from tkinter import ttk
 
 import db
 import theme
+from difficulty import DIFFICULTIES
 
 
 class MainMenu(ttk.Frame):
@@ -18,7 +19,7 @@ class MainMenu(ttk.Frame):
         tk.Label(
             self, text="⌨  Typing Practice", font=("Helvetica", 26, "bold"),
             bg=theme.BG, fg=theme.TITLE
-        ).pack(pady=(60, 30))
+        ).pack(pady=(40, 20))
 
         tk.Label(
             self, text="Enter your name to continue", font=("Helvetica", 13),
@@ -35,7 +36,26 @@ class MainMenu(ttk.Frame):
         self.error_label = tk.Label(
             self, text="", font=("Helvetica", 10), bg=theme.BG, fg=theme.RED
         )
-        self.error_label.pack(pady=(5, 15))
+        self.error_label.pack(pady=(5, 10))
+
+        # Difficulty selector
+        diff_frame = tk.Frame(self, bg=theme.BG)
+        diff_frame.pack(pady=(5, 5))
+        tk.Label(
+            diff_frame, text="Difficulty:", font=("Helvetica", 12),
+            bg=theme.BG, fg=theme.TEXT
+        ).pack(side="left", padx=(0, 10))
+        self.difficulty_var = tk.StringVar(value=app.difficulty)
+        for level in DIFFICULTIES:
+            ttk.Radiobutton(
+                diff_frame, text=level, value=level, variable=self.difficulty_var
+            ).pack(side="left", padx=5)
+
+        # Optional timer toggle (applies to whichever difficulty is selected)
+        self.timer_var = tk.BooleanVar(value=app.timer_enabled)
+        ttk.Checkbutton(
+            self, text="Enable Timer", variable=self.timer_var
+        ).pack(pady=(5, 15))
 
         btn_frame = tk.Frame(self, bg=theme.BG)
         btn_frame.pack(pady=10)
@@ -79,6 +99,8 @@ class MainMenu(ttk.Frame):
 
     def _start_game(self):
         if self._require_name():
+            self.app.difficulty = self.difficulty_var.get()
+            self.app.timer_enabled = self.timer_var.get()
             self.app.show_screen("game")
 
     def _show_progress(self):

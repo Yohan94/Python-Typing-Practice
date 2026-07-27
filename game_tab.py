@@ -48,19 +48,11 @@ class GameTab(ttk.Frame):
             bg=theme.BG, fg=theme.TITLE
         ).pack(pady=(20, 10))
 
-        # Difficulty selector
-        diff_frame = tk.Frame(self, bg=theme.BG)
-        diff_frame.pack(pady=(0, 10))
-        tk.Label(
-            diff_frame, text="Difficulty:", font=self.stats_font,
-            bg=theme.BG, fg=theme.TEXT
-        ).pack(side="left", padx=(0, 10))
-        self.difficulty_var = tk.StringVar(value="Medium")
-        for level in DIFFICULTIES:
-            ttk.Radiobutton(
-                diff_frame, text=level, value=level, variable=self.difficulty_var,
-                command=self.new_sentence
-            ).pack(side="left", padx=5)
+        # Difficulty/timer are chosen on the main menu; just show what's active.
+        self.info_label = tk.Label(
+            self, text="", font=self.stats_font, bg=theme.BG, fg=theme.SUBTEXT
+        )
+        self.info_label.pack(pady=(0, 10))
 
         # Sentence display (Text widget so we can color individual characters)
         self.display = tk.Text(
@@ -115,6 +107,7 @@ class GameTab(ttk.Frame):
 
     def refresh(self):
         self.player_label.config(text=f"Player: {self.app.player_name}")
+        self.new_sentence()
 
     def _cancel_timer(self):
         if self.timer_job is not None:
@@ -123,11 +116,13 @@ class GameTab(ttk.Frame):
 
     def new_sentence(self):
         self._cancel_timer()
-        level = self.difficulty_var.get()
+        level = self.app.difficulty
         config = DIFFICULTIES[level]
         self.current_sentence = random.choice(config["sentences"])
-        self.time_limit = config["time_limit"]
+        self.time_limit = config["time_limit"] if self.app.timer_enabled else None
         self.remaining = self.time_limit
+        timer_text = f"{self.time_limit}s" if self.time_limit is not None else "Off"
+        self.info_label.config(text=f"Difficulty: {level}   Timer: {timer_text}")
         self.start_time = None
         self.finished = False
         self.timed_out = False
@@ -214,7 +209,7 @@ class GameTab(ttk.Frame):
             )
             score = final_wpm * (100.0 / 100.0)
             self.app.record_session(
-                difficulty=self.difficulty_var.get(),
+                difficulty=self.app.difficulty,
                 sentence=target,
                 wpm=final_wpm,
                 accuracy=100.0,

@@ -1,11 +1,12 @@
 """
-Difficulty levels: each maps to its own sentence pool and an optional
-countdown time limit (seconds). None means untimed.
+Difficulty levels: each maps to its own sentence pool and a default
+countdown duration (seconds). The countdown itself is optional and only
+applies when the player enables the timer from the main menu.
 """
 
 DIFFICULTIES = {
     "Easy": {
-        "time_limit": None,
+        "time_limit": 60,
         "sentences": [
             "The cat sat on the mat.",
             "I like to read books.",

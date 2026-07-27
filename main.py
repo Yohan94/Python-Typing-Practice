@@ -34,6 +34,8 @@ class TypingGameApp:
 
         self.player_id = None
         self.player_name = None
+        self.difficulty = "Medium"
+        self.timer_enabled = False
 
         self.container = tk.Frame(self.root, bg=theme.BG)
         self.container.pack(fill="both", expand=True)

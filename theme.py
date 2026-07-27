@@ -65,6 +65,11 @@ def build_style(root):
     style.map("TRadiobutton", background=[("active", BG)], foreground=[("active", BLUE)])
 
     style.configure(
+        "TCheckbutton", background=BG, foreground=TEXT, font=("Helvetica", 12)
+    )
+    style.map("TCheckbutton", background=[("active", BG)], foreground=[("active", BLUE)])
+
+    style.configure(
         "TButton", background=BLUE, foreground=BG, borderwidth=0,
         padding=(12, 6), font=("Helvetica", 11)
     )
