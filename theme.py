@@ -17,6 +17,7 @@ RED_HOVER = "#eba0ac"
 BLUE = "#89b4fa"
 BLUE_HOVER = "#74c7ec"
 TEAL = "#94e2d5"
+YELLOW = "#f9e2af"
 
 
 def build_fonts():

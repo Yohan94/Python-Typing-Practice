@@ -3,13 +3,12 @@ The typing gameplay tab: sentence display, entry box, live stats,
 difficulty selector, and optional countdown timer.
 """
 
-import random
 import time
 import tkinter as tk
 from tkinter import ttk
 
 import theme
-from difficulty import DIFFICULTIES
+from sentences import get_time_limit, pick_sentence
 
 
 class GameTab(ttk.Frame):
@@ -60,6 +59,13 @@ class GameTab(ttk.Frame):
         self.display.tag_configure("correct", foreground=theme.GREEN)
         self.display.tag_configure("incorrect", foreground=theme.RED, underline=True)
         self.display.tag_configure("pending", foreground=theme.SUBTEXT)
+
+        # Teaching note for the current sentence (blank for plain sentences)
+        self.note_label = tk.Label(
+            self, text="", font=("Helvetica", 11, "italic"),
+            bg=theme.BG, fg=theme.YELLOW, wraplength=700, justify="center"
+        )
+        self.note_label.pack(pady=(0, 5))
 
         self.entry_var = tk.StringVar()
         self.entry = tk.Entry(
@@ -116,13 +122,16 @@ class GameTab(ttk.Frame):
 
     def new_sentence(self):
         self._cancel_timer()
+        category = self.app.sentence_type
         level = self.app.difficulty
-        config = DIFFICULTIES[level]
-        self.current_sentence = random.choice(config["sentences"])
-        self.time_limit = config["time_limit"] if self.app.timer_enabled else None
+        self.current_sentence, note = pick_sentence(category, level)
+        self.time_limit = get_time_limit(category, level) if self.app.timer_enabled else None
         self.remaining = self.time_limit
         timer_text = f"{self.time_limit}s" if self.time_limit is not None else "Off"
-        self.info_label.config(text=f"Difficulty: {level}   Timer: {timer_text}")
+        self.info_label.config(
+            text=f"Type: {category}   Difficulty: {level}   Timer: {timer_text}"
+        )
+        self.note_label.config(text=note)
         self.start_time = None
         self.finished = False
         self.timed_out = False

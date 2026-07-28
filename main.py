@@ -14,6 +14,7 @@ Requires only the Python standard library (tkinter, sqlite3), no extra installs.
 import tkinter as tk
 
 import db
+import sentences
 import theme
 from main_menu import MainMenu
 from game_tab import GameTab
@@ -35,6 +36,7 @@ class TypingGameApp:
         self.player_id = None
         self.player_name = None
         self.difficulty = "Medium"
+        self.sentence_type = sentences.DEFAULT_CATEGORY
         self.timer_enabled = False
 
         self.container = tk.Frame(self.root, bg=theme.BG)
