@@ -350,3 +350,27 @@ def pick_sentence(category, level):
     if isinstance(entry, tuple):
         return entry
     return entry, ""
+
+
+def _strip_punctuation(text):
+    """Drop every punctuation mark except apostrophes and hyphens that sit
+    inside a word, so contractions and compounds stay readable:
+    "Don't beat around the bush; tell me." -> "Don't beat around the bush tell me"
+    """
+    kept = []
+    for i, ch in enumerate(text):
+        if ch.isalnum() or ch.isspace():
+            kept.append(ch)
+        elif (ch in "'-" and 0 < i < len(text) - 1
+              and text[i - 1].isalnum() and text[i + 1].isalnum()):
+            kept.append(ch)
+    return " ".join("".join(kept).split())
+
+
+def format_sentence(text, punctuation=True, capitals=True):
+    """Apply the player's typing options to a sentence before it is displayed."""
+    if not punctuation:
+        text = _strip_punctuation(text)
+    if not capitals:
+        text = text.lower()
+    return text

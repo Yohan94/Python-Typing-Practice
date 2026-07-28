@@ -38,6 +38,8 @@ class TypingGameApp:
         self.difficulty = "Medium"
         self.sentence_type = sentences.DEFAULT_CATEGORY
         self.timer_enabled = False
+        self.punctuation_enabled = True
+        self.capitals_enabled = True
 
         self.container = tk.Frame(self.root, bg=theme.BG)
         self.container.pack(fill="both", expand=True)

@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import theme
-from sentences import get_time_limit, pick_sentence
+from sentences import format_sentence, get_time_limit, pick_sentence
 
 
 class GameTab(ttk.Frame):
@@ -124,12 +124,23 @@ class GameTab(ttk.Frame):
         self._cancel_timer()
         category = self.app.sentence_type
         level = self.app.difficulty
-        self.current_sentence, note = pick_sentence(category, level)
+        sentence, note = pick_sentence(category, level)
+        self.current_sentence = format_sentence(
+            sentence,
+            punctuation=self.app.punctuation_enabled,
+            capitals=self.app.capitals_enabled,
+        )
         self.time_limit = get_time_limit(category, level) if self.app.timer_enabled else None
         self.remaining = self.time_limit
         timer_text = f"{self.time_limit}s" if self.time_limit is not None else "Off"
+        simplified = []
+        if not self.app.punctuation_enabled:
+            simplified.append("no punctuation")
+        if not self.app.capitals_enabled:
+            simplified.append("lowercase")
+        extras = f"   ({', '.join(simplified)})" if simplified else ""
         self.info_label.config(
-            text=f"Type: {category}   Difficulty: {level}   Timer: {timer_text}"
+            text=f"Type: {category}   Difficulty: {level}   Timer: {timer_text}{extras}"
         )
         self.note_label.config(text=note)
         self.start_time = None

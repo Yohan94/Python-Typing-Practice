@@ -65,11 +65,22 @@ class MainMenu(ttk.Frame):
                 diff_frame, text=level, value=level, variable=self.difficulty_var
             ).pack(side="left", padx=5)
 
-        # Optional timer toggle (applies to whichever difficulty is selected)
+        # Toggles that apply to whichever type and difficulty are selected.
+        # Unchecking Punctuation or Capital Letters simplifies the sentences.
+        options_frame = tk.Frame(self, bg=theme.BG)
+        options_frame.pack(pady=(5, 15))
         self.timer_var = tk.BooleanVar(value=app.timer_enabled)
         ttk.Checkbutton(
-            self, text="Enable Timer", variable=self.timer_var
-        ).pack(pady=(5, 15))
+            options_frame, text="Enable Timer", variable=self.timer_var
+        ).pack(side="left", padx=8)
+        self.punctuation_var = tk.BooleanVar(value=app.punctuation_enabled)
+        ttk.Checkbutton(
+            options_frame, text="Punctuation", variable=self.punctuation_var
+        ).pack(side="left", padx=8)
+        self.capitals_var = tk.BooleanVar(value=app.capitals_enabled)
+        ttk.Checkbutton(
+            options_frame, text="Capital Letters", variable=self.capitals_var
+        ).pack(side="left", padx=8)
 
         btn_frame = tk.Frame(self, bg=theme.BG)
         btn_frame.pack(pady=10)
@@ -116,6 +127,8 @@ class MainMenu(ttk.Frame):
             self.app.difficulty = self.difficulty_var.get()
             self.app.sentence_type = self.type_var.get()
             self.app.timer_enabled = self.timer_var.get()
+            self.app.punctuation_enabled = self.punctuation_var.get()
+            self.app.capitals_enabled = self.capitals_var.get()
             self.app.show_screen("game")
 
     def _show_progress(self):
