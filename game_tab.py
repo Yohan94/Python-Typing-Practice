@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import theme
-from sentences import format_sentence, get_time_limit, pick_sentence
+from sentences import BEGINNER_LEVEL, format_sentence, get_time_limit, pick_sentence
 
 
 class GameTab(ttk.Frame):
@@ -127,6 +127,7 @@ class GameTab(ttk.Frame):
         sentence, note = pick_sentence(category, level)
         self.current_sentence = format_sentence(
             sentence,
+            level,
             punctuation=self.app.punctuation_enabled,
             capitals=self.app.capitals_enabled,
         )
@@ -134,7 +135,7 @@ class GameTab(ttk.Frame):
         self.remaining = self.time_limit
         timer_text = f"{self.time_limit}s" if self.time_limit is not None else "Off"
         simplified = []
-        if not self.app.punctuation_enabled:
+        if level == BEGINNER_LEVEL or not self.app.punctuation_enabled:
             simplified.append("no punctuation")
         if not self.app.capitals_enabled:
             simplified.append("lowercase")

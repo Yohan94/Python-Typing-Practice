@@ -28,7 +28,7 @@ GRAMMAR = {
             ("Do you live near the station?",
              "Yes/no questions in Present Simple start with 'Do' or 'Does'."),
             ("This is my sister's bag.",
-             "Add 's to a person to show possession."),
+             "Possession - the bag belongs to my sister."),
             ("The children are playing in the garden.",
              "Irregular plural: one child, two children."),
             ("I go to work by bus at eight o'clock.",
@@ -334,6 +334,12 @@ SENTENCE_SETS = {
 
 DEFAULT_CATEGORY = "General"
 
+# The level that is always shown without any punctuation at all.
+BEGINNER_LEVEL = "Easy"
+
+# Marks that become a space when stripped, instead of being deleted outright.
+_SEPARATORS = "-/"
+
 
 def _pool(category, level):
     """Look up one pool, falling back to General if a category goes stale."""
@@ -352,25 +358,42 @@ def pick_sentence(category, level):
     return entry, ""
 
 
-def _strip_punctuation(text):
-    """Drop every punctuation mark except apostrophes and hyphens that sit
-    inside a word, so contractions and compounds stay readable:
+def _strip_punctuation(text, keep_word_marks=True):
+    """Drop punctuation from a sentence.
+
+    With keep_word_marks, apostrophes and hyphens inside a word survive so that
+    contractions and compounds stay readable:
     "Don't beat around the bush; tell me." -> "Don't beat around the bush tell me"
+
+    Without it nothing survives, and separators become a space rather than
+    fusing two words together:
+    "Don't beat around the bush; tell me." -> "Dont beat around the bush tell me"
+    "12.4% year-on-year"                   -> "124 year on year"
     """
     kept = []
     for i, ch in enumerate(text):
         if ch.isalnum() or ch.isspace():
             kept.append(ch)
-        elif (ch in "'-" and 0 < i < len(text) - 1
-              and text[i - 1].isalnum() and text[i + 1].isalnum()):
-            kept.append(ch)
+        elif keep_word_marks:
+            if (ch in "'-" and 0 < i < len(text) - 1
+                    and text[i - 1].isalnum() and text[i + 1].isalnum()):
+                kept.append(ch)
+        elif ch in _SEPARATORS:
+            kept.append(" ")
     return " ".join("".join(kept).split())
 
 
-def format_sentence(text, punctuation=True, capitals=True):
-    """Apply the player's typing options to a sentence before it is displayed."""
-    if not punctuation:
-        text = _strip_punctuation(text)
+def format_sentence(text, level, punctuation=True, capitals=True):
+    """Apply the player's typing options to a sentence before it is displayed.
+
+    Beginners get plain letter keys: on Easy every punctuation mark goes,
+    whatever the menu toggle says. Medium and Hard follow the toggle and keep
+    their contractions.
+    """
+    if level == BEGINNER_LEVEL:
+        text = _strip_punctuation(text, keep_word_marks=False)
+    elif not punctuation:
+        text = _strip_punctuation(text, keep_word_marks=True)
     if not capitals:
         text = text.lower()
     return text
