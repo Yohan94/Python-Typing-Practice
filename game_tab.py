@@ -3,13 +3,12 @@ The typing gameplay tab: sentence display, entry box, live stats,
 difficulty selector, and optional countdown timer.
 """
 
-import random
 import time
 import tkinter as tk
 from tkinter import ttk
 
 import theme
-from difficulty import DIFFICULTIES
+from sentences import BEGINNER_LEVEL, format_sentence, get_time_limit, pick_sentence
 
 
 class GameTab(ttk.Frame):
@@ -31,12 +30,6 @@ class GameTab(ttk.Frame):
         top_bar = tk.Frame(self, bg=theme.BG)
         top_bar.pack(fill="x", padx=10, pady=(10, 0))
 
-        tk.Button(
-            top_bar, text="☰ Menu", command=lambda: self.app.show_screen("menu"),
-            font=("Helvetica", 10), bg=theme.SURFACE2, fg=theme.TEXT,
-            activebackground=theme.SURFACE, borderwidth=0, padx=10, pady=4
-        ).pack(side="left")
-
         self.player_label = tk.Label(
             top_bar, text="", font=("Helvetica", 10, "bold"),
             bg=theme.BG, fg=theme.TEAL
@@ -48,19 +41,11 @@ class GameTab(ttk.Frame):
             bg=theme.BG, fg=theme.TITLE
         ).pack(pady=(20, 10))
 
-        # Difficulty selector
-        diff_frame = tk.Frame(self, bg=theme.BG)
-        diff_frame.pack(pady=(0, 10))
-        tk.Label(
-            diff_frame, text="Difficulty:", font=self.stats_font,
-            bg=theme.BG, fg=theme.TEXT
-        ).pack(side="left", padx=(0, 10))
-        self.difficulty_var = tk.StringVar(value="Medium")
-        for level in DIFFICULTIES:
-            ttk.Radiobutton(
-                diff_frame, text=level, value=level, variable=self.difficulty_var,
-                command=self.new_sentence
-            ).pack(side="left", padx=5)
+        # Difficulty/timer are chosen on the main menu; just show what's active.
+        self.info_label = tk.Label(
+            self, text="", font=self.stats_font, bg=theme.BG, fg=theme.SUBTEXT
+        )
+        self.info_label.pack(pady=(0, 10))
 
         # Sentence display (Text widget so we can color individual characters)
         self.display = tk.Text(
@@ -74,6 +59,13 @@ class GameTab(ttk.Frame):
         self.display.tag_configure("correct", foreground=theme.GREEN)
         self.display.tag_configure("incorrect", foreground=theme.RED, underline=True)
         self.display.tag_configure("pending", foreground=theme.SUBTEXT)
+
+        # Teaching note for the current sentence (blank for plain sentences)
+        self.note_label = tk.Label(
+            self, text="", font=("Helvetica", 11, "italic"),
+            bg=theme.BG, fg=theme.YELLOW, wraplength=700, justify="center"
+        )
+        self.note_label.pack(pady=(0, 5))
 
         self.entry_var = tk.StringVar()
         self.entry = tk.Entry(
@@ -106,6 +98,12 @@ class GameTab(ttk.Frame):
         ).pack(side="left", padx=10)
 
         tk.Button(
+            btn_frame, text="Back to Menu", command=lambda: self.app.show_screen("menu"),
+            font=self.stats_font, bg=theme.SURFACE2, fg=theme.TEXT,
+            activebackground=theme.SURFACE, borderwidth=0, padx=15, pady=8
+        ).pack(side="left", padx=10)
+
+        tk.Button(
             btn_frame, text="Quit", command=self.app.root.destroy,
             font=self.stats_font, bg=theme.RED, fg=theme.BG,
             activebackground=theme.RED_HOVER, borderwidth=0, padx=15, pady=8
@@ -115,6 +113,7 @@ class GameTab(ttk.Frame):
 
     def refresh(self):
         self.player_label.config(text=f"Player: {self.app.player_name}")
+        self.new_sentence()
 
     def _cancel_timer(self):
         if self.timer_job is not None:
@@ -123,11 +122,28 @@ class GameTab(ttk.Frame):
 
     def new_sentence(self):
         self._cancel_timer()
-        level = self.difficulty_var.get()
-        config = DIFFICULTIES[level]
-        self.current_sentence = random.choice(config["sentences"])
-        self.time_limit = config["time_limit"]
+        category = self.app.sentence_type
+        level = self.app.difficulty
+        sentence, note = pick_sentence(category, level)
+        self.current_sentence = format_sentence(
+            sentence,
+            level,
+            punctuation=self.app.punctuation_enabled,
+            capitals=self.app.capitals_enabled,
+        )
+        self.time_limit = get_time_limit(category, level) if self.app.timer_enabled else None
         self.remaining = self.time_limit
+        timer_text = f"{self.time_limit}s" if self.time_limit is not None else "Off"
+        simplified = []
+        if level == BEGINNER_LEVEL or not self.app.punctuation_enabled:
+            simplified.append("no punctuation")
+        if not self.app.capitals_enabled:
+            simplified.append("lowercase")
+        extras = f"   ({', '.join(simplified)})" if simplified else ""
+        self.info_label.config(
+            text=f"Type: {category}   Difficulty: {level}   Timer: {timer_text}{extras}"
+        )
+        self.note_label.config(text=note)
         self.start_time = None
         self.finished = False
         self.timed_out = False
@@ -214,7 +230,7 @@ class GameTab(ttk.Frame):
             )
             score = final_wpm * (100.0 / 100.0)
             self.app.record_session(
-                difficulty=self.difficulty_var.get(),
+                difficulty=self.app.difficulty,
                 sentence=target,
                 wpm=final_wpm,
                 accuracy=100.0,

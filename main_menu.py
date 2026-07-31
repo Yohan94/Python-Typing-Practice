@@ -8,6 +8,8 @@ from tkinter import ttk
 
 import db
 import theme
+from difficulty import DIFFICULTIES
+from sentences import SENTENCE_SETS
 
 
 class MainMenu(ttk.Frame):
@@ -18,7 +20,7 @@ class MainMenu(ttk.Frame):
         tk.Label(
             self, text="⌨  Typing Practice", font=("Helvetica", 26, "bold"),
             bg=theme.BG, fg=theme.TITLE
-        ).pack(pady=(60, 30))
+        ).pack(pady=(25, 12))
 
         tk.Label(
             self, text="Enter your name to continue", font=("Helvetica", 13),
@@ -35,7 +37,50 @@ class MainMenu(ttk.Frame):
         self.error_label = tk.Label(
             self, text="", font=("Helvetica", 10), bg=theme.BG, fg=theme.RED
         )
-        self.error_label.pack(pady=(5, 15))
+        self.error_label.pack(pady=(3, 6))
+
+        # Sentence type selector: which pool of sentences to practise with
+        type_frame = tk.Frame(self, bg=theme.BG)
+        type_frame.pack(pady=(5, 5))
+        tk.Label(
+            type_frame, text="Sentence Type:", font=("Helvetica", 12),
+            bg=theme.BG, fg=theme.TEXT
+        ).pack(side="left", padx=(0, 10))
+        self.type_var = tk.StringVar(value=app.sentence_type)
+        for category in SENTENCE_SETS:
+            ttk.Radiobutton(
+                type_frame, text=category, value=category, variable=self.type_var
+            ).pack(side="left", padx=5)
+
+        # Difficulty selector
+        diff_frame = tk.Frame(self, bg=theme.BG)
+        diff_frame.pack(pady=(5, 5))
+        tk.Label(
+            diff_frame, text="Difficulty:", font=("Helvetica", 12),
+            bg=theme.BG, fg=theme.TEXT
+        ).pack(side="left", padx=(0, 10))
+        self.difficulty_var = tk.StringVar(value=app.difficulty)
+        for level in DIFFICULTIES:
+            ttk.Radiobutton(
+                diff_frame, text=level, value=level, variable=self.difficulty_var
+            ).pack(side="left", padx=5)
+
+        # Toggles that apply to whichever type and difficulty are selected.
+        # Unchecking Punctuation or Capital Letters simplifies the sentences.
+        options_frame = tk.Frame(self, bg=theme.BG)
+        options_frame.pack(pady=(5, 15))
+        self.timer_var = tk.BooleanVar(value=app.timer_enabled)
+        ttk.Checkbutton(
+            options_frame, text="Enable Timer", variable=self.timer_var
+        ).pack(side="left", padx=8)
+        self.punctuation_var = tk.BooleanVar(value=app.punctuation_enabled)
+        ttk.Checkbutton(
+            options_frame, text="Punctuation", variable=self.punctuation_var
+        ).pack(side="left", padx=8)
+        self.capitals_var = tk.BooleanVar(value=app.capitals_enabled)
+        ttk.Checkbutton(
+            options_frame, text="Capital Letters", variable=self.capitals_var
+        ).pack(side="left", padx=8)
 
         btn_frame = tk.Frame(self, bg=theme.BG)
         btn_frame.pack(pady=10)
@@ -79,6 +124,11 @@ class MainMenu(ttk.Frame):
 
     def _start_game(self):
         if self._require_name():
+            self.app.difficulty = self.difficulty_var.get()
+            self.app.sentence_type = self.type_var.get()
+            self.app.timer_enabled = self.timer_var.get()
+            self.app.punctuation_enabled = self.punctuation_var.get()
+            self.app.capitals_enabled = self.capitals_var.get()
             self.app.show_screen("game")
 
     def _show_progress(self):

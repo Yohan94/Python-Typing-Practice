@@ -17,6 +17,7 @@ RED_HOVER = "#eba0ac"
 BLUE = "#89b4fa"
 BLUE_HOVER = "#74c7ec"
 TEAL = "#94e2d5"
+YELLOW = "#f9e2af"
 
 
 def build_fonts():
@@ -63,6 +64,11 @@ def build_style(root):
         "TRadiobutton", background=BG, foreground=TEXT, font=("Helvetica", 12)
     )
     style.map("TRadiobutton", background=[("active", BG)], foreground=[("active", BLUE)])
+
+    style.configure(
+        "TCheckbutton", background=BG, foreground=TEXT, font=("Helvetica", 12)
+    )
+    style.map("TCheckbutton", background=[("active", BG)], foreground=[("active", BLUE)])
 
     style.configure(
         "TButton", background=BLUE, foreground=BG, borderwidth=0,
