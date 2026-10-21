@@ -14,11 +14,20 @@ database.
   grammar tips) shown under each sentence.
 - **Punctuation & capitalization toggles** — simplify sentences for beginners
   by stripping punctuation and/or lowercasing text.
-- **Optional countdown timer** — race against the clock, or turn it off to
-  practice at your own pace.
-- **Leaderboard** — top 10 scores per difficulty, across all players.
-- **Progress tracking** — per-player session history with a lightweight
-  sparkline trend of your last several rounds, no charting library required.
+- **Type straight onto the sentence** — letters turn from pencil grey to ink
+  as you type them correctly, mistakes (including wrong spaces) are marked in
+  red, and a highlighter shows the next letter.
+- **Honest accuracy** — every wrong key counts, even after you fix it with
+  Backspace, and the score is words per minute multiplied by accuracy.
+- **Optional countdown timer** — race against the clock with a draining time
+  bar, or turn it off to practice at your own pace.
+- **Keyboard first** — Enter starts and moves to the next sentence, Tab skips
+  a sentence, Esc returns to the menu from any screen.
+- **Leaderboard** — top 10 scores per difficulty, across all players, with
+  your own rounds highlighted.
+- **Progress tracking** — a words-per-minute chart of your last 30 rounds
+  (hover a point for details), your best and recent averages, and a personal
+  best check after every round, drawn on a plain Tk canvas.
 - **Local persistence** — players and completed sessions are stored in a
   SQLite database (`typing_game.db`), created automatically on first run.
 
@@ -34,10 +43,12 @@ database.
 python main.py
 ```
 
-1. Enter a player name (existing names are remembered and suggested).
-2. Pick a sentence category and difficulty.
-3. Optionally enable the timer, or toggle punctuation / capital letters.
-4. Click **Start Game** and start typing!
+1. Enter a player name (the last player is filled in, and existing names are
+   suggested).
+2. Pick a subject (sentence category) and difficulty.
+3. Optionally enable the countdown timer, or turn off punctuation / capital
+   letters.
+4. Click **Start typing** (or press Enter) and type the sentence.
 
 ## Project structure
 
@@ -51,7 +62,8 @@ python main.py
 | `difficulty.py` | Difficulty levels and their default sentence pools. |
 | `sentences.py` | Sentence categories, punctuation stripping, sentence selection. |
 | `db.py` | SQLite schema and persistence helpers. |
-| `theme.py` | Shared colors and fonts for the UI. |
+| `theme.py` | Exercise-book colors, fonts and ttk styling. |
+| `widgets.py` | Shared widgets: page with margin, buttons, segmented chooser, ruled table. |
 
 ## Data storage
 

@@ -107,3 +107,27 @@ def get_player_history(player_id, difficulty=None, limit=200):
                LIMIT ?""",
             (player_id, limit),
         ).fetchall()
+
+
+def last_player_name():
+    """Name of whoever finished a round most recently, else the newest player."""
+    with get_connection() as conn:
+        row = conn.execute(
+            """SELECT p.name AS name
+               FROM players p
+               LEFT JOIN sessions s ON s.player_id = p.id
+               GROUP BY p.id
+               ORDER BY MAX(COALESCE(s.completed_at, p.created_at)) DESC
+               LIMIT 1"""
+        ).fetchone()
+        return row["name"] if row else ""
+
+
+def get_personal_best(player_id, difficulty):
+    """Highest WPM this player has recorded on a difficulty, or None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT MAX(wpm) AS best FROM sessions WHERE player_id = ? AND difficulty = ?",
+            (player_id, difficulty),
+        ).fetchone()
+        return row["best"]

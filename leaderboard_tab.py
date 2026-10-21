@@ -1,70 +1,70 @@
 """
-Leaderboard tab: top 10 scores per difficulty, across all players.
+Leaderboard screen: top 10 scores per difficulty, across all players.
+Score is words per minute weighted by accuracy.
 """
 
 import tkinter as tk
-from tkinter import ttk
 
 import db
 import theme
 from difficulty import DIFFICULTIES
+from widgets import FlatButton, Page, RuledTable, Segmented, format_date
 
 
-class LeaderboardTab(ttk.Frame):
+class LeaderboardTab(Page):
     def __init__(self, parent, app):
-        super().__init__(parent, style="TFrame")
-        self.app = app
-
-        top_bar = tk.Frame(self, bg=theme.BG)
-        top_bar.pack(fill="x", padx=10, pady=(10, 0))
-        tk.Button(
-            top_bar, text="☰ Menu", command=lambda: self.app.show_screen("menu"),
-            font=("Helvetica", 10), bg=theme.SURFACE2, fg=theme.TEXT,
-            activebackground=theme.SURFACE, borderwidth=0, padx=10, pady=4
-        ).pack(side="left")
+        super().__init__(parent, app)
+        fonts = self.fonts
+        body = self.body
+        self.add_back_link()
 
         tk.Label(
-            self, text="🏆  Leaderboard", font=("Helvetica", 18, "bold"),
-            bg=theme.BG, fg=theme.TITLE
-        ).pack(pady=(20, 10))
-
-        filter_frame = tk.Frame(self, bg=theme.BG)
-        filter_frame.pack(pady=(0, 10))
+            body, text="Leaderboard", font=fonts["heading"], bg=theme.PAPER,
+            fg=theme.INK, anchor="w",
+        ).pack(anchor="w", pady=(24, 0))
         tk.Label(
-            filter_frame, text="Difficulty:", font=("Helvetica", 12),
-            bg=theme.BG, fg=theme.TEXT
-        ).pack(side="left", padx=(0, 10))
-        self.difficulty_var = tk.StringVar(value="Medium")
-        for level in DIFFICULTIES:
-            ttk.Radiobutton(
-                filter_frame, text=level, value=level, variable=self.difficulty_var,
-                command=self.refresh
-            ).pack(side="left", padx=5)
+            body, text="The ten best rounds by everyone on this computer. "
+                       "Score is words per minute multiplied by accuracy.\n"
+                       "Your own rounds are highlighted.",
+            font=fonts["body"], bg=theme.PAPER, fg=theme.PENCIL, anchor="w", justify="left",
+        ).pack(anchor="w", pady=(2, 16))
 
-        columns = ("rank", "player", "wpm", "accuracy", "score", "date")
-        self.tree = ttk.Treeview(self, columns=columns, show="headings", height=10)
-        headings = {
-            "rank": "Rank", "player": "Player", "wpm": "WPM",
-            "accuracy": "Accuracy", "score": "Score", "date": "Date",
-        }
-        widths = {"rank": 50, "player": 150, "wpm": 80, "accuracy": 90, "score": 90, "date": 160}
-        for col in columns:
-            self.tree.heading(col, text=headings[col])
-            self.tree.column(col, width=widths[col], anchor="center")
-        self.tree.pack(padx=20, pady=10, fill="both", expand=True)
+        self.difficulty_var = tk.StringVar(value=app.difficulty)
+        Segmented(body, fonts, DIFFICULTIES, self.difficulty_var,
+                  command=self.refresh).pack(anchor="w", pady=(0, 18))
 
-        self.refresh()
+        self.table = RuledTable(body, fonts, [
+            ("Rank", 5, "w"), ("Player", 16, "w"), ("Score", 7, "e"),
+            ("WPM", 6, "e"), ("Accuracy", 9, "e"), ("Date", 18, "w"),
+        ])
+        self.table.pack(anchor="w")
+
+        self.empty = tk.Frame(body, bg=theme.PAPER)
+        self.empty_label = tk.Label(
+            self.empty, text="", font=fonts["body"], bg=theme.PAPER, fg=theme.INK,
+            anchor="w",
+        )
+        self.empty_label.pack(anchor="w", pady=(16, 12))
+        FlatButton(self.empty, fonts, "Choose a round",
+                   lambda: self.app.show_screen("menu")).pack(anchor="w")
 
     def refresh(self):
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-        rows = db.get_leaderboard(self.difficulty_var.get())
-        for i, row in enumerate(rows, start=1):
-            self.tree.insert(
-                "", "end",
-                values=(
-                    i, row["name"], f"{row['wpm']:.0f}",
-                    f"{row['accuracy']:.0f}%", f"{row['score']:.1f}",
-                    row["completed_at"],
-                ),
+        level = self.difficulty_var.get()
+        rows = db.get_leaderboard(level)
+        values, mine = [], set()
+        for i, row in enumerate(rows):
+            values.append((
+                str(i + 1), row["name"], f"{row['score']:.1f}", f"{row['wpm']:.0f}",
+                f"{row['accuracy']:.0f}%", format_date(row["completed_at"]),
+            ))
+            if self.app.player_name and row["name"].lower() == self.app.player_name.lower():
+                mine.add(i)
+        self.table.set_rows(values, highlight=mine, highlight_column=1)
+
+        if rows:
+            self.empty.pack_forget()
+        else:
+            self.empty_label.config(
+                text=f"No one has finished a {level} round yet. Finish one to take first place."
             )
+            self.empty.pack(anchor="w")

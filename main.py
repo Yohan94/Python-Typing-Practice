@@ -26,11 +26,12 @@ class TypingGameApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Typing Practice Game")
-        self.root.geometry("900x600")
-        self.root.configure(bg=theme.BG)
-        self.root.resizable(False, False)
+        self.root.geometry("980x680")
+        self.root.minsize(900, 640)
+        self.root.configure(bg=theme.PAPER)
 
-        theme.build_style(self.root)
+        self.fonts = theme.build_fonts()
+        theme.build_style(self.root, self.fonts)
         db.init_db()
 
         self.player_id = None
@@ -41,7 +42,7 @@ class TypingGameApp:
         self.punctuation_enabled = True
         self.capitals_enabled = True
 
-        self.container = tk.Frame(self.root, bg=theme.BG)
+        self.container = tk.Frame(self.root, bg=theme.PAPER)
         self.container.pack(fill="both", expand=True)
 
         self.screens = {
@@ -53,9 +54,16 @@ class TypingGameApp:
         for screen in self.screens.values():
             screen.place(relx=0, rely=0, relwidth=1, relheight=1)
 
+        self.current_screen = None
+        self.root.bind("<Escape>", self._on_escape)
         self.show_screen("menu")
 
+    def _on_escape(self, event=None):
+        if self.current_screen != "menu":
+            self.show_screen("menu")
+
     def show_screen(self, name):
+        self.current_screen = name
         screen = self.screens[name]
         screen.tkraise()
         if hasattr(screen, "refresh"):
